@@ -262,8 +262,81 @@ body {
   cursor: pointer;
 }
 
+.control-btn:hover {
+  transform: translateY(6px);
+}
+
 .back-btn {
   font-weight: bold; 
   margin-bottom: 20px; 
   cursor: pointer;
+}
+
+.back-btn:hover {
+  transform: translateY(6px);
+}
+
+.react-confirm-alert-overlay {
+  background: rgba(0, 0, 0, 0.5) !important;
+  z-index: 101 !important;
+}
+
+.custom_alert {
+  width: 600px;
+  height: auto;
+  background: #fff;
+  border: none;
+  border-radius: 30px;
+  padding: 56px 40px;
+
+  & > h1 {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    color: #b70000;
+    font-size: 66px;
+    margin-bottom: 15px;
+  }
+
+  & > p {
+    width: 100%;
+    font-size: 18px;
+    text-align: center;
+    color: #444;
+  }
+
+  .btn_group {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+  }
+}
+
+
+.sure-btn {
+  margin: 30px auto 0;
+  width: max-content;
+  min-width: 200px;
+  height: 64px;
+  font-size: 22px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #1fb5c9;
+  border: none;
+  box-shadow: 0px 20px 40px rgba(16,104,116,.2);
+  border-radius: 34px;
+  cursor: pointer;
+  color: #fff;
+  transition: all .3s ease;
+}
+
+.sure-btn:hover {
+  transform: translateY(6px);
+}
+
+.opacity-30 {
+  opacity: 30%;
 }

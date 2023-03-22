@@ -24,20 +24,6 @@ export async function getDisplayMedia(status) {
     return await navigator.mediaDevices.getDisplayMedia(option)
 }
 
-export async function getDisplayMediaWithAudio() {
-  const option = {
-    video: {
-      mandatory: {
-        maxWidth: screen.width,
-        maxHeight: screen.height,
-        maxFrameRate: 60,
-      },
-    },
-    audio: true
-  }
-  return await navigator.mediaDevices.getDisplayMediaWithAudio(option)
-}
-
 export async function getAudioMedia() {
   const option = { audio: true }
   return await navigator.mediaDevices.getUserMedia(option)

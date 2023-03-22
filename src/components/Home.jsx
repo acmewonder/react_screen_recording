@@ -6,22 +6,27 @@ import VideoPlayer from "./VideoPlayer/VideoPlayer"
 import RecordBtn from "./RecordBtn/RecordBtn"
 import SourceInit from "./SourceInit/SourceInit"
 
-import Camera from "../assets/camera.svg"
-import Webcam from "../assets/webcam.svg"
-import Sound from "../assets/sound.svg"
-import Mic from "../assets/mic.svg"
-import Back from '../assets/back.svg';
-import Checked from "../assets/checked.svg"
-import Screen from "../assets/screen.svg"
-import Start from "../assets/start.svg"
-import Resume from '../assets/resume.svg';
-import Stop from '../assets/stop.svg';
-import End from '../assets/end.svg';
+import CameraImg from "../assets/camera.svg"
+import WebcamImg from "../assets/webcam.svg"
+import SoundImg from "../assets/sound.svg"
+import MicImg from "../assets/mic.svg"
+import BackImg from '../assets/back.svg';
+import CheckedImg from "../assets/checked.svg"
+import ScreenImg from "../assets/screen.svg"
+import StartImg from "../assets/start.svg"
+import ResumeImg from '../assets/resume.svg';
+import StopImg from '../assets/stop.svg';
+import EndImg from '../assets/end.svg';
 
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css'
+import {BsExclamationCircle} from "react-icons/bs"
 
-import { getDisplayMedia, getAudioMedia, getDisplayMediaWithAudio } from "./getDisplayMedia"
+import { getDisplayMedia, getAudioMedia } from "./getDisplayMedia"
+
+import Webcam from "react-webcam";
 
 function Home() {
   const [displaySource, setDisplaySource] = useState(false)
@@ -79,12 +84,62 @@ function Home() {
         const tempSecond = second + 1;
         setSecond(tempSecond);
       }, 1000)
-
-      return () => { // this should work flawlessly besides some milliseconds lost here and there 
-        clearTimeout(timer)
-      }
+      return () => { clearTimeout(timer) }
     }
   }, [second, timerStatus]);
+
+  const handleSound = () => {
+    setSetting({...setting, sound: !setting.sound})
+  }
+
+  const handleMic = async () => {
+    if (!navigator.mediaDevices?.enumerateDevices) {
+      console.log("enumerateDevices() not supported.");
+    } else {
+      // List cameras and microphones.
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      console.log(devices);
+      const audioInputDevices = devices.filter((device) => device.kind === 'audioinput');
+      if(audioInputDevices.length > 0){
+        setSetting({...setting, mic: true})
+        const audioSource = await getAudioMedia()
+        audioSource.getAudioTracks().forEach((audioTrack) => {
+          displaySource.addTrack(audioTrack)
+        })
+      }
+      else{
+        setSetting({...setting, mic: false})
+        confirmAlert({
+          customUI: ({ onClose }) => {
+            return (
+              <div className='custom_alert'>
+                <h1><BsExclamationCircle /></h1>
+                <p>システムサウンドの入力デバイスが検出されません。</p>
+                <div className="btn_group">
+                  <button type="button" className="sure-btn" onClick={() => {onClose()}}>OK</button>
+                </div>
+              </div>
+            );
+          }
+        });
+      }
+    }
+  }
+
+  const getVideoSources = async() => {
+    try {
+      let displaySource;
+      if(setting.sound)
+        displaySource = await getDisplayMedia(setting.sound)
+      else
+        displaySource = await getDisplayMedia(setting.sound)
+      setDisplaySource(displaySource)
+    } catch {}
+  }
+
+  const handleBack = () =>{
+    setDisplaySource(false);
+  }
 
   async function startRecording() {
     setTimerStatus(true);
@@ -151,139 +206,104 @@ function Home() {
     downloadLink.remove()
   }
 
-  const handleSound = () => {
-    setSetting({...setting, sound: !setting.sound})
-  }
-
-  const handleMic = async () => {
-    toast.warning('MediaDevice Not Found!', {
-      position: "top-right",
-      autoClose: 2000,
-      hideProgressBar: true,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
-
-    const audioSource = await getAudioMedia()
-    console.log(audioSource);
-    audioSource.getAudioTracks().forEach((audioTrack) => {
-      displaySource.addTrack(audioTrack)
-    })  
-  }
-
-  const getVideoSources = async() => {
-    console.log(setting.sound);
-    try {
-      let displaySource;
-      if(setting.sound)
-        displaySource = await getDisplayMedia(setting.sound)
-      else
-        displaySource = await getDisplayMedia(setting.sound)
-      setDisplaySource(displaySource)
-    } catch {}
-  }
-
-  const handleBack = () =>{
-    setDisplaySource(false);
-  }
-
   return (    
     <>
       <div className="m-auto" style={{ maxWidth: '80%', marginTop: '150px' }}>
         <div className="flex">
           <div className="flex items-center m-0-auto" style={{marginBottom: '50px'}}>
-            <img className="w-100 h-50" src={Camera} alt="camera" />
+            <img className="w-100 h-50" src={CameraImg} alt="camera" />
             <div className="color-black font-size_36 font-weight_700">フリーオンライン録画</div>
           </div>
         </div>
         {
          displaySource ? 
-              <>
-              <Grid container columns={12}>
-                <Grid item xs={12} md={3} lg={3}>
-                </Grid>
-                <Grid item xs={12} md={5} lg={5} className="p-30">
-                  <div className="back-btn" onClick={handleBack}>
-                    <img src={Back} className="w-24 h-24" alt="back" />&nbsp;戻る
-                  </div>
-                  <VideoPlayer
-                    displaySource={displaySource}
-                    setDisplaySource={setDisplaySource}
-                  />
-                  <div className='flex justify-around' style={{marginTop: '40px'}}>
-                    <img src={Webcam} className="w-30 h-30" alt="webcam" />
-                    <img src={Sound} className="w-30 h-30" alt="sound" />
-                    <img src={Mic} className="w-30 h-30" alt="mic" />
-                  </div>
-                </Grid>
-                <Grid item xs={12} md={4} lg={4} className="p-30">
-                  <div className='count-down-num'>{hour < 10 ? '0' + hour : hour}:{minute < 10 ? '0' + minute : minute}:{second < 10 ? '0' + second : second} </div>
-                  <div className='flex justify-evenly' style={{marginTop: '30px'}}>
-                  {
-                    !isRecording? 
+          <>
+            <Grid container columns={12}>
+              <Grid item xs={12} md={3} lg={3}>
+              </Grid>
+              <Grid item xs={12} md={5} lg={5} className="p-30">
+                <div className="back-btn" onClick={handleBack}>
+                  <img src={BackImg} className="w-24 h-24" alt="back" />&nbsp;戻る
+                </div>
+                <VideoPlayer
+                  displaySource={displaySource}
+                  setDisplaySource={setDisplaySource}
+                />
+                <div className='flex justify-around' style={{marginTop: '40px'}}>
+                  <img src={WebcamImg} className={setting.camera ? "w-30 h-30" : "w-30 h-30 opacity-30" } alt="webcam" />
+                  <img src={SoundImg} className={setting.sound ? "w-30 h-30" : "w-30 h-30 opacity-30" } alt="sound" />
+                  <img src={MicImg} className={setting.mic ? "w-30 h-30" : "w-30 h-30 opacity-30" } alt="mic" />
+                </div>
+              </Grid>
+              <Grid item xs={12} md={4} lg={4} className="p-30">
+                <div className='count-down-num'>{hour < 10 ? '0' + hour : hour}:{minute < 10 ? '0' + minute : minute}:{second < 10 ? '0' + second : second} </div>
+                <div className='flex justify-evenly' style={{marginTop: '30px'}}>
+                {
+                  !isRecording? 
+                    <>
+                      <div className="control-btn" onClick={startRecording}>
+                        <img src={ResumeImg} className="w-24 h-24" alt="end" />
+                      </div>
+                      <div className="control-btn" onClick={stopRecording}>
+                        <img src={EndImg} className="w-24 h-24" alt="end" />
+                      </div>
+                    </>
+                    :
+                    recordingPause ?
                       <>
-                        <div className="control-btn" onClick={startRecording}>
-                          <img src={Resume} className="w-24 h-24" alt="end" />
+                        <div className="control-btn" onClick={resumeRecording}>
+                          <img src={ResumeImg} className="w-24 h-24" alt="end" />
                         </div>
                         <div className="control-btn" onClick={stopRecording}>
-                          <img src={End} className="w-24 h-24" alt="end" />
+                          <img src={EndImg} className="w-24 h-24" alt="end" />
                         </div>
                       </>
                       :
-                      recordingPause ?
-                        <>
-                          <div className="control-btn" onClick={resumeRecording}>
-                            <img src={Resume} className="w-24 h-24" alt="end" />
-                          </div>
-                          <div className="control-btn" onClick={stopRecording}>
-                            <img src={End} className="w-24 h-24" alt="end" />
-                          </div>
-                        </>
-                        :
-                        <>
-                          <div className="control-btn" onClick={pauseRecording}>
-                            <img src={Stop} className="w-24 h-24" alt="end" />
-                          </div>
-                          <div className="control-btn" onClick={stopRecording}>
-                            <img src={End} className="w-24 h-24" alt="end" />
-                          </div>
-                        </>
-                  }
-                  </div>
-                </Grid>
+                      <>
+                        <div className="control-btn" onClick={pauseRecording}>
+                          <img src={StopImg} className="w-24 h-24" alt="end" />
+                        </div>
+                        <div className="control-btn" onClick={stopRecording}>
+                          <img src={EndImg} className="w-24 h-24" alt="end" />
+                        </div>
+                      </>
+                }
+                </div>
+                <div>
+                  <Webcam width={300} height={400} audio={true} />
+                </div>
               </Grid>
-            </>
-            :
-            <>        
-              <div className="flex justify-evenly">
-                <div className="main_btn">
-                  <img className="w-100 h-50 m-0-auto" src={Screen} alt="screen" />
-                  <div className="mt-10">スクリーン</div>
-                  <img className={setting.screen ? "check-active" : "check-unactive"} src={Checked} alt="checked" />          
-                </div>
-                <div className="main_btn">
-                  <img className="w-100 h-50 m-0-auto" src={Webcam} alt="screen" />
-                  <div className="mt-10">ウェブカメラ</div>
-                  <img className={setting.camera ? "check-active" : "check-unactive"} src={Checked} alt="checked" />
-                </div>
-                <div className="main_btn" onClick={handleSound}>
-                  <img className="w-100 h-50 m-0-auto" src={Sound} alt="screen" />
-                  <div className="mt-10">システムサウンド</div>
-                  <img className={setting.sound ? "check-active" : "check-unactive"} src={Checked}  alt="checked" />
-                </div>
-                <div className="main_btn" onClick={handleMic}>
-                  <img className="w-100 h-50 m-0-auto" src={Mic} alt="screen" />
-                  <div className="mt-10">マイク</div>
-                  <img className={setting.mic ? "check-active" : "check-unactive"} src={Checked}  alt="checked" />
-                </div>
+            </Grid>
+          </>
+          :
+          <>        
+            <div className="flex justify-evenly">
+              <div className="main_btn">
+                <img className="w-100 h-50 m-0-auto" src={ScreenImg} alt="screen" />
+                <div className="mt-10">スクリーン</div>
+                <img className={setting.screen ? "check-active" : "check-unactive"} src={CheckedImg} alt="checked" />          
               </div>
-              <button className="record-btn record-start m-auto" style={{marginTop:"50px"}} onClick={getVideoSources}>
-                <img className="w-24 h-24 padding-5 w-35 h-35" src={Start} style={{backgroundColor: '#1fb5c9', borderRadius:'50%'}} alt="checked" />
-                録画開始
-              </button>
-            </>
+              <div className="main_btn" >
+                <img className="w-100 h-50 m-0-auto" src={WebcamImg} alt="screen" />
+                <div className="mt-10">ウェブカメラ</div>
+                <img className={setting.camera ? "check-active" : "check-unactive"} src={CheckedImg} alt="checked" />
+              </div>
+              <div className="main_btn" onClick={handleSound}>
+                <img className="w-100 h-50 m-0-auto" src={SoundImg} alt="screen" />
+                <div className="mt-10">システムサウンド</div>
+                <img className={setting.sound ? "check-active" : "check-unactive"} src={CheckedImg}  alt="checked" />
+              </div>
+              <div className="main_btn" onClick={handleMic}>
+                <img className="w-100 h-50 m-0-auto" src={MicImg} alt="screen" />
+                <div className="mt-10">マイク</div>
+                <img className={setting.mic ? "check-active" : "check-unactive"} src={CheckedImg}  alt="checked" />
+              </div>
+            </div>
+            <button className="record-btn record-start m-auto" style={{marginTop:"50px"}} onClick={getVideoSources}>
+              <img className="w-24 h-24 padding-5 w-35 h-35" src={StartImg} style={{backgroundColor: '#1fb5c9', borderRadius:'50%'}} alt="checked" />
+              録画開始
+            </button>
+          </>
         }
       </div>
     </>
