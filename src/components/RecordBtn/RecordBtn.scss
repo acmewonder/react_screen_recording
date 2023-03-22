@@ -1,0 +1,45 @@
+.stickyBottom{
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  flex: auto;
+}
+
+.wideBtn {
+  font-size: 1.2em;
+  font-weight: bold;
+  padding: 1em 1em;
+  color: white;
+  border: none;
+  width: 100%;
+  height: 100%;
+}
+
+.startBtn {
+  background-color: #238823;
+  transition: 0.15s ease-in-out;
+
+  &:hover {
+    background-color: #199d19;
+    box-shadow: 0 0 0.3rem #199d19aa;
+  }
+}
+
+.stopBtn {
+  background-color: #D2222D;
+  animation: stopGlow 1s ease-in-out 0s infinite alternate;
+  animation-timing-function: ease-in-out;
+  @keyframes stopGlow {
+    0% {background-color: #D2222D;}
+    50% {
+      background-color: #D2222D;
+      transform: scale(1);
+    }
+    75% {
+      background-color: #e3444f;
+      box-shadow: 0 0 0.3rem #e3444faa;
+      transform: scale(1.025);
+    }
+    100% {background-color: #D2222D;}
+  }
+}
