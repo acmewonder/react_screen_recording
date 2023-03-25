@@ -88,6 +88,38 @@ function Home() {
     }
   }, [second, timerStatus]);
 
+  const handleWebcam = async () => {
+     if (!navigator.mediaDevices?.enumerateDevices) {
+      setSetting({...setting, camera: false})
+      console.log("enumerateDevices() not supported.");
+    } else {
+      if(setting.camera){
+        setSetting({...setting, camera: !setting.camera})
+      } else {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoInputDevices = devices.filter((device) => device.kind === 'videoinput');
+        if(videoInputDevices.length > 0)
+          setSetting({...setting, camera: true})
+        else {
+          setSetting({...setting, camera: false})
+          confirmAlert({
+            customUI: ({ onClose }) => {
+              return (
+                <div className='custom_alert'>
+                  <h1><BsExclamationCircle /></h1>
+                  <p>システムカメラが検出されません。</p>
+                  <div className="btn_group">
+                    <button type="button" className="sure-btn" onClick={() => {onClose()}}>OK</button>
+                  </div>
+                </div>
+              );
+            }
+          });
+        }
+      }
+    }
+  }
+
   const handleSound = () => {
     setSetting({...setting, sound: !setting.sound})
   }
@@ -96,13 +128,11 @@ function Home() {
     if (!navigator.mediaDevices?.enumerateDevices) {
       console.log("enumerateDevices() not supported.");
     } else {
-      // List cameras and microphones.
       const devices = await navigator.mediaDevices.enumerateDevices();
-      console.log(devices);
       const audioInputDevices = devices.filter((device) => device.kind === 'audioinput');
       if(audioInputDevices.length > 0){
         setSetting({...setting, mic: true})
-        const audioSource = await getAudioMedia()
+        const audioSource = await getAudioMedia();
         audioSource.getAudioTracks().forEach((audioTrack) => {
           displaySource.addTrack(audioTrack)
         })
@@ -144,12 +174,6 @@ function Home() {
   async function startRecording() {
     setTimerStatus(true);
     setIsRecording(true)
-
-    // Add microphone audioTrack to videoSource
-    // const audioSource = await getAudioMedia()
-    // audioSource.getAudioTracks().forEach((audioTrack) => {
-    //   displaySource.addTrack(audioTrack)
-    // })
 
     let options = { mimeType: "video/webm;codecs=vp8" }
     const mediaRecorder = new MediaRecorder(displaySource, options)
@@ -269,8 +293,13 @@ function Home() {
                       </>
                 }
                 </div>
-                <div>
-                  <Webcam width={300} height={400} audio={true} />
+                <div className="flex" style={{marginTop: '120px'}}>
+                  {
+                    setting.camera ?
+                    <Webcam width={200} height={250} audio={false} style={{margin:'auto'}} />
+                    : 
+                    null
+                  }
                 </div>
               </Grid>
             </Grid>
@@ -283,7 +312,7 @@ function Home() {
                 <div className="mt-10">スクリーン</div>
                 <img className={setting.screen ? "check-active" : "check-unactive"} src={CheckedImg} alt="checked" />          
               </div>
-              <div className="main_btn" >
+              <div className="main_btn" onClick={handleWebcam}>
                 <img className="w-100 h-50 m-0-auto" src={WebcamImg} alt="screen" />
                 <div className="mt-10">ウェブカメラ</div>
                 <img className={setting.camera ? "check-active" : "check-unactive"} src={CheckedImg} alt="checked" />
