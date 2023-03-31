@@ -132,10 +132,6 @@ function Home() {
       const audioInputDevices = devices.filter((device) => device.kind === 'audioinput');
       if(audioInputDevices.length > 0){
         setSetting({...setting, mic: true})
-        const audioSource = await getAudioMedia();
-        audioSource.getAudioTracks().forEach((audioTrack) => {
-          displaySource.addTrack(audioTrack)
-        })
       }
       else{
         setSetting({...setting, mic: false})
@@ -164,6 +160,13 @@ function Home() {
       else
         displaySource = await getDisplayMedia(setting.sound)
       setDisplaySource(displaySource)
+
+      if(setting.mic){
+        const audioSource = await getAudioMedia()
+        audioSource.getAudioTracks().forEach((audioTrack) => {
+          displaySource.addTrack(audioTrack)
+        })
+      }
     } catch {}
   }
 
