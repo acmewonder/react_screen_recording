@@ -127,11 +127,12 @@ function Home() {
   const handleMic = async () => {
     if (!navigator.mediaDevices?.enumerateDevices) {
       console.log("enumerateDevices() not supported.");
+      setSetting({...setting, mic: false})
     } else {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const audioInputDevices = devices.filter((device) => device.kind === 'audioinput');
       if(audioInputDevices.length > 0){
-        setSetting({...setting, mic: true})
+        setSetting({...setting, mic: !setting.mic})
       }
       else{
         setSetting({...setting, mic: false})
@@ -162,6 +163,7 @@ function Home() {
       setDisplaySource(displaySource)
 
       if(setting.mic){
+        console.log('setting mic');
         const audioSource = await getAudioMedia()
         audioSource.getAudioTracks().forEach((audioTrack) => {
           displaySource.addTrack(audioTrack)
